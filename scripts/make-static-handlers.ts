@@ -119,7 +119,7 @@ void (async () => {
   // Dynamic (script) route goes last
   routes.push(backendRoute);
 
-  const routesYaml = yaml.safeDump({handlers: routes}, {skipInvalid: true});
+  const routesYaml = yaml.dump({handlers: routes}, {skipInvalid: true});
   await fs
     .writeFile(ROUTE_CONFIG, routesYaml)
     .then(() => {
