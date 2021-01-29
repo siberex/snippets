@@ -93,39 +93,44 @@ const createRoute = (relPath: string, expand?: boolean): StaticRouteType => {
 };
 
 void (async () => {
-  const routes: RouteType[] = [];
-  console.info('📌 Creating static routes...');
+  try {
+    const routes: RouteType[] = [];
+    console.info('📌 Creating static routes...');
 
-  // const pattern = '**/('+Object.keys(ROUTE_FLAGS).join('|')+')';
-  const pattern = Object.keys(ROUTE_FLAGS).map((k) => `**/${k}`);
+    // const pattern = '**/('+Object.keys(ROUTE_FLAGS).join('|')+')';
+    const pattern = Object.keys(ROUTE_FLAGS).map((k) => `**/${k}`);
 
-  const filesKnown = await glob(pattern, GLOB_OPTIONS);
+    const filesKnown = await glob(pattern, GLOB_OPTIONS);
 
-  for (const path of filesKnown) {
-    routes.push(createRoute(path, true));
-    console.info(path);
-  }
+    for (const path of filesKnown) {
+      routes.push(createRoute(path, true));
+      console.info(path);
+    }
 
-  const filesAll = await glob('**/*.*', {
-    ...GLOB_OPTIONS,
-    ignore: IGNORE_FILES.concat(pattern),
-  });
-
-  for (const path of filesAll) {
-    routes.push(createRoute(path));
-    console.info(path);
-  }
-
-  // Dynamic (script) route goes last
-  routes.push(backendRoute);
-
-  const routesYaml = yaml.dump({handlers: routes}, {skipInvalid: true});
-  await fs
-    .writeFile(ROUTE_CONFIG, routesYaml)
-    .then(() => {
-      console.info(`✅ Success: ${ROUTE_CONFIG} saved.`);
-    })
-    .catch((err) => {
-      console.error(err);
+    const filesAll = await glob('**/*.*', {
+      ...GLOB_OPTIONS,
+      ignore: IGNORE_FILES.concat(pattern),
     });
+
+    for (const path of filesAll) {
+      routes.push(createRoute(path));
+      console.info(path);
+    }
+
+    // Dynamic (script) route goes last
+    routes.push(backendRoute);
+
+    const routesYaml = yaml.dump({handlers: routes}, {skipInvalid: true});
+    await fs
+      .writeFile(ROUTE_CONFIG, routesYaml)
+      .then(() => {
+        console.info(`✅ Success: ${ROUTE_CONFIG} saved.`);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  } catch (e) {
+    console.error(e);
+    process.exit(1);
+  }
 })();
