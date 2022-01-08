@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eo pipefail
+set -euo pipefail
 
 # https://www.jetbrains.com/help/idea/shared-indexes.html
 
@@ -13,10 +13,11 @@ IDEA_BIN="/Applications/IntelliJ IDEA.app/Contents/MacOS/idea"
 
 CDN_LAYOUT_TOOL="cdn-layout-tool"
 
-if [ -d "$1" ]; then    
-    PROJECT_DIR=$1
-else
-    PROJECT_DIR=$(pwd -P)    
+PROJECT_DIR=${1:-""}
+
+# If no directory provided, assume current dir is a project dir
+if ! [ -d "$PROJECT_DIR" ]; then
+    PROJECT_DIR=$(pwd -P)
 fi
 
 PROJECT_NAME=$(basename "$PROJECT_DIR")
@@ -40,12 +41,12 @@ LAST_COMMIT=$(git --git-dir="$PROJECT_DIR/.git" rev-parse HEAD 2>/dev/null)
 PORT=$((1111 + RANDOM % 8888))
 
 # Generate CDN directory structure from indexes
-cdn-layout-tool --indexes-dir="$INDEX_DIR/generate-output" --url="http://0.0.0.0:$PORT/"
+"$CDN_LAYOUT_TOOL" --indexes-dir="$INDEX_DIR/generate-output" --url="http://0.0.0.0:$PORT/"
 
 
 echo Updating project intellij.yaml
 touch "$PROJECT_DIR/intellij.yaml"
-yq e -i '.sharedIndex.project[0].url = "http://loclahost:'"$PORT"'/"' "$PROJECT_DIR/intellij.yaml"
+yq e -i '.sharedIndex.project[0].url = "http://localhost:'"$PORT"'/"' "$PROJECT_DIR/intellij.yaml"
 cat "$PROJECT_DIR/intellij.yaml"
 
 echo Launching local web server with generated CDN layout...
