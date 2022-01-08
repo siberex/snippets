@@ -22,8 +22,59 @@ fi
 
 PROJECT_NAME=$(basename "$PROJECT_DIR")
 
-echo "Project dir: $PROJECT_DIR"
-echo "Project name: $PROJECT_NAME"
+
+# Fancy colors
+blu="\e[1;95m" # Bold Magenta
+bri="\e[97m"   # Bright
+red="\e[1;91m" # Bold Red
+clr="\e[0m"    # Reset
+function printok() {
+  printf "✅ ${blu}%s${clr}\n" "$*"
+}
+function printerr() {
+  printf "❌ ${red}%s${clr}\n" "$*"
+}
+function printbright() {
+  printf "${bri}%s${clr}\n" "$*"
+}
+
+
+# Check dependencies
+if [ -x "$IDEA_BIN" ]; then
+    printok "IDEA binary found"
+else
+    printerr You need to install IDEA
+    exit 1
+fi
+
+if hash yq 2>/dev/null; then
+    printok "yq installed"
+else
+    printerr "You need to install yq: https://github.com/mikefarah/yq/#install"
+    printf " - Homebrew: ${bri}%s${clr}\n" "brew install yq"
+    printf " - Go: ${bri}%s${clr}\n" "go install github.com/mikefarah/yq/v4@latest"
+    exit 2
+fi
+
+if hash "$CDN_LAYOUT_TOOL" 2>/dev/null; then
+    printok "cdn-layout-tool found"
+else
+    echo "Downloading cdn-layout-tool..."
+    # https://packages.jetbrains.team/maven/p/ij/intellij-shared-indexes-public/com/jetbrains/intellij/indexing/shared/cdn-layout-tool/
+    CLT_VER=0.8.65
+    curl -L -o "/tmp/cdn-layout-tool-$CLT_VER.zip" "https://packages.jetbrains.team/maven/p/ij/intellij-shared-indexes-public/com/jetbrains/intellij/indexing/shared/cdn-layout-tool/$CLT_VER/cdn-layout-tool-$CLT_VER.zip"
+
+    unzip -u "/tmp/cdn-layout-tool-$CLT_VER.zip" -d "/tmp"
+    rm -f "/tmp/cdn-layout-tool-$CLT_VER.zip"
+
+    CDN_LAYOUT_TOOL="/tmp/cdn-layout-tool-$CLT_VER/bin/cdn-layout-tool"
+    printf "Done: ${bri}%s${clr}\n" "$CDN_LAYOUT_TOOL"
+fi
+
+
+printf "Project dir: ${bri}%s${clr}\n" "$PROJECT_DIR"
+printf "Project name: ${bri}%s${clr}\n" "$PROJECT_NAME"
+
 
 export IDEA_PROPERTIES=/tmp/ide.properties
 
