@@ -25,11 +25,8 @@ PROJECT_DIR=${1:-""}
 
 # If no directory provided, assume current dir is a project dir
 if ! [ -d "$PROJECT_DIR" ]; then
-    PROJECT_DIR=$(pwd -P)
+    PROJECT_DIR="$(pwd -P)"
 fi
-
-PROJECT_NAME=$(basename "$PROJECT_DIR")
-
 
 # Fancy colors
 blu="\e[1;95m" # Bold Magenta
@@ -45,6 +42,24 @@ function printerr() {
 function printbright() {
   printf "${bri}%s${clr}\n" "$*"
 }
+
+
+# Guess project name from dir name
+PROJECT_NAME=$(basename "$PROJECT_DIR")
+
+# Guess project name from .idea/.name file
+if [ -f "$PROJECT_DIR/.idea/.name" ]; then
+    PROJECT_NAME=$(cat "$PROJECT_DIR/.idea/.name")
+elif [ -d "$PROJECT_DIR/.idea" ]; then
+    # Guess project name from *.iml file name
+    IML_PATH=$(find "$PROJECT_DIR" "$PROJECT_DIR/.idea" -maxdepth 1 -type f -name "*.iml" | head -1)
+    if [ -n "$IML_PATH" ]; then
+        IML_FILENAME=$(basename "$IML_PATH")
+        PROJECT_NAME="${IML_FILENAME%.iml}"
+    fi
+else 
+    printerr "WARNNING: No .idea dir found! IDEA will treat $PROJECT_DIR as a directory outside the sources root"
+fi
 
 
 # Check dependencies
@@ -80,17 +95,19 @@ else
 fi
 
 
+# Ok, let’s go
 printf "Project dir: ${bri}%s${clr}\n" "$PROJECT_DIR"
 printf "Project name: ${bri}%s${clr}\n" "$PROJECT_NAME"
 
-
+# Create clean config for IDEA
 export IDEA_PROPERTIES=/tmp/ide.properties
 
 echo "idea.system.path=/tmp/ide-system" > "$IDEA_PROPERTIES"
 echo "idea.config.path=/tmp/ide-config" >> "$IDEA_PROPERTIES"
 echo "idea.log.path=/tmp/ide-log" >> "$IDEA_PROPERTIES"
 
-LAST_COMMIT=$(git --git-dir="$PROJECT_DIR/.git" rev-parse HEAD 2>/dev/null)
+# NB: Providing --git-dir="$PROJECT_DIR/.git" will not work when indexing .ijwb dir (which is a proper project dir for projects synced with Bazel plugin)
+LAST_COMMIT=$(cd "$PROJECT_DIR" && git rev-parse HEAD 2>/dev/null || echo "")
 
 # Generate indexes
 echo Creating shared indexes at:
@@ -100,19 +117,30 @@ printbright "You could later copy produced *.ijx files to the idea.system.path/s
 
 PORT=9876
 URL="http://0.0.0.0:$PORT/"
+URL_PATH="$URL$PROJECT_NAME"
+
+# Urlencode URL_PATH if jq is available
+if hash jq 2>/dev/null; then
+    URL_PATH=$(printf %s "$PROJECT_NAME" | jq -sRr @uri)
+    URL_PATH="$URL$URL_PATH"
+fi
 
 # Generate CDN directory structure from indexes
 echo Creating CDN layout from index chunks...
 "$CDN_LAYOUT_TOOL" --indexes-dir="$TMP_OUTPUT_DIR" --url="$URL"
 
 rm "$TMP_OUTPUT_DIR/project/list.json.xz"
+
+# Match dotfiles, to be able to cp .../project/.ijwb ...
+set -o dotglob
 cp -Rp "$TMP_OUTPUT_DIR/project"/* "$CDN_ROOT"
 rm -rf "$TMP_OUTPUT_DIR/project"
 cp -p "$TMP_OUTPUT_DIR"/*.ijx.xz "$CDN_ROOT"
+set +o dotglob
 
 echo Updating project intellij.yaml
 touch "$PROJECT_DIR/intellij.yaml"
-yq e -i '.sharedIndex.project[0].url = "'$URL$PROJECT_NAME'"' "$PROJECT_DIR/intellij.yaml"
+yq e -i ".sharedIndex.project[0].url = \"$URL_PATH\"" "$PROJECT_DIR/intellij.yaml"
 cat "$PROJECT_DIR/intellij.yaml"
 
 echo Launching local web server with generated CDN layout at:
