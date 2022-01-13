@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-# Usage: scripts/setup_gcloud.sh [PROJECT_ID]
+# Creates IAM role for Google App Engine deployment
+# Creates Service Account, binds to created role and dumps it's auth key
+# Useful to streamline Github Actions setup for GAE deployments
+
+# Usage: ./appengine_deployer_role.sh [PROJECT_ID]
 
 set -euo pipefail
 
