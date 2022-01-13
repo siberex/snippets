@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env zsh
 set -euo pipefail
 
 # https://www.jetbrains.com/help/idea/shared-indexes.html
