@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": ".",
+    "sourceMap": true
+  },
+  "extends": "../tsconfig.json",
+  "files": ["make-static-handlers.ts"]
+}
