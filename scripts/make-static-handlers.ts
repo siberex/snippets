@@ -36,7 +36,7 @@ interface DynamicRouteType extends RouteType {
 }
 
 const backendRoute: DynamicRouteType = {
-  url: '/.*',
+  url: '.*',
   secure: 'always',
   redirect_http_response_code: 301,
   script: 'auto',
@@ -58,7 +58,7 @@ const ROUTE_FLAGS: RouteFlagsType = {
   '*.woff2': 'font/woff2',
 };
 
-const IGNORE_FILES = ['**/.DS_Store', '**/LICENSE.txt', '**/config.json'];
+const IGNORE_FILES = ['**/.DS_Store', '**/LICENSE.txt', '**/config.json', '**/*.php'];
 
 const GLOB_OPTIONS: Options = {
   braceExpansion: false,
@@ -82,8 +82,10 @@ const createRoute = (relPath: string, expand?: boolean): StaticRouteType => {
     }
   }
 
+  const url = relPath.replace(/(index.html?)$/, '');
+
   return {
-    url: `/${relPath}`,
+    url: `/${url}`,
     static_files: `public/${relPath}`,
     upload: `public/${relPath}`,
     secure: 'always',
@@ -97,7 +99,6 @@ void (async () => {
     const routes: RouteType[] = [];
     console.info('📌 Creating static routes...');
 
-    // const pattern = '**/('+Object.keys(ROUTE_FLAGS).join('|')+')';
     const pattern = Object.keys(ROUTE_FLAGS).map((k) => `**/${k}`);
 
     const filesKnown = await glob(pattern, GLOB_OPTIONS);
