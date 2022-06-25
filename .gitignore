@@ -1,3 +1,9 @@
 
 # JetBrains
 /.idea/
+
+# NPM
+node_modules/
+
+# Artifacts
+dist/
