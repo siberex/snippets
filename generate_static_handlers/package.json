@@ -4,9 +4,9 @@
   "description": "Generate static routes config for Google App Engine deployments",
   "main": "dist/main.js",
   "scripts": {
-    "build": "tsc -p .",
-    "bundle": "rollup -c",
-    "start": "npm run bundle && node dist/main.js"
+    "build": "node esbuild.js",
+    "build-rollup": "rollup -c",
+    "start": "npm run build && node dist/main.js"
   },
   "type": "module",
   "author": "Stepan Legachev <stepan@irkfap.com>",
@@ -17,6 +17,7 @@
     "@rollup/plugin-typescript": "^8.3.3",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.0.0",
+    "esbuild": "^0.14.47",
     "fast-glob": "^3.2.11",
     "js-yaml": "^4.1.0",
     "rollup": "^2.75.7",
