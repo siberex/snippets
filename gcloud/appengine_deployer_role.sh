@@ -23,6 +23,9 @@ SERVICE_ACCOUNT_EMAIL=${SERVICE_ACCOUNT}@${GOOGLE_CLOUD_PROJECT}.iam.gserviceacc
 bld='\033[1m'
 clr='\033[0m'
 
+# Enable the Cloud Build API (should be enabled to operate with permissions: cloudbuild.builds.create, cloudbuild.builds.get):
+gcloud services enable cloudbuild.googleapis.com --project "${GOOGLE_CLOUD_PROJECT}"
+
 if gcloud iam roles describe "${ROLE_ID}" --project="${GOOGLE_CLOUD_PROJECT}" >/dev/null 2>&1; then
   echo -e "✓ Found Role $bld${ROLE_ID}$clr in Project $bld${GOOGLE_CLOUD_PROJECT}$clr"
 else
