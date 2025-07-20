@@ -42,7 +42,11 @@ const backendRoute: DynamicRouteType = {
   script: 'auto',
 };
 
+// FIXME: get path from process.argv[2]
+// const args = process.argv.slice(2);
 const STATIC_DIR = pathJoin(process.cwd(), 'public');
+
+// FIXME: get file path from process.argv[3]
 const ROUTE_CONFIG = pathJoin(process.cwd(), 'routes.yaml');
 
 type RouteFlagsType = {[key: string]: string | {[key: string]: string}};
@@ -93,6 +97,10 @@ const createRoute = (relPath: string, expand?: boolean): StaticRouteType => {
     ...routeFlags,
   };
 };
+
+if (require.main === module) {
+  // cli exec
+}
 
 void (async () => {
   try {

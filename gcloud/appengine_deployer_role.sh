@@ -48,12 +48,12 @@ else
   gcloud projects add-iam-policy-binding "${GOOGLE_CLOUD_PROJECT}" --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" --role="projects/${GOOGLE_CLOUD_PROJECT}/roles/${ROLE_ID}" --condition=None
 fi
 
-echo -e "… Creating new private key for $bld${SERVICE_ACCOUNT}$clr"
 
-TMP_OUTPUT_FILE="$(mktemp)"
-gcloud iam service-accounts keys create "${TMP_OUTPUT_FILE}" --iam-account "${SERVICE_ACCOUNT_EMAIL}"
+#echo -e "… Creating new private key for $bld${SERVICE_ACCOUNT}$clr"
+#TMP_OUTPUT_FILE="$(mktemp)"
+#gcloud iam service-accounts keys create "${TMP_OUTPUT_FILE}" --iam-account "${SERVICE_ACCOUNT_EMAIL}"
 
 printf "\n${bld}GCLOUD_PROJECT_ID${clr}: %s\n" "${GOOGLE_CLOUD_PROJECT}"
 printf "\n${bld}GCP_SA_EMAIL${clr}: %s\n" "${SERVICE_ACCOUNT_EMAIL}"
-printf "\n${bld}GOOGLE_APPLICATION_CREDENTIALS${clr} (copy all lines):\n\n%s\n\n" "$(base64 "${TMP_OUTPUT_FILE}")"
-rm "${TMP_OUTPUT_FILE}"
+#printf "\n${bld}GOOGLE_APPLICATION_CREDENTIALS${clr} (copy all lines):\n\n%s\n\n" "$(base64 "${TMP_OUTPUT_FILE}")"
+#rm "${TMP_OUTPUT_FILE}"
