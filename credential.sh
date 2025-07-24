@@ -81,16 +81,30 @@ check_credentials_dir() {
     fi
 }
 
+# Check for systemd-creds executable
+check_systemd_creds() {
+    if ! command -v systemd-creds >/dev/null 2>&1; then
+        echo "Error: systemd-creds executable not found" >&2
+        exit 1
+    fi
+}
+
 # Main execution
 main() {
     parse_args "$@"
     validate_args
     check_credentials_dir
+    check_systemd_creds
 
     output_file="${CREDENTIALS_DIRECTORY}/${name}.encrypted"
 
     echo -n "$value" | systemd-creds encrypt --name="$name" - - | tee "$output_file" >/dev/null
     chmod 600 "$output_file"
+
+    if [[ ! -s "$output_file" ]]; then
+        echo "Error: Failed to create credential file or file is empty" >&2
+        exit 1
+    fi
 
     echo "Successfully stored encrypted credential in $output_file"
     echo "Use in your service with:"
