@@ -4,15 +4,16 @@
 # See also: https://systemd.io/CREDENTIALS/
 
 # Usage:
-# sudo ./credential.sh --name="MYSQL_PASSWORD" --value="secretMYSQLpasswordEXAMPLE"
+# ./credential.sh --name="MYSQL_PASSWORD" --value="secretMYSQLpasswordEXAMPLE"
 # Or:
-# sudo ./credential.sh MYSQL_PASSWORD secretMYSQLpasswordEXAMPLE
+# ./credential.sh MYSQL_PASSWORD secretMYSQLpasswordEXAMPLE
 
 # Prerequisites:
+# chmod +x credential.sh
 # ls -al /var/lib/systemd/credential.secret
 # mkdir "$HOME/.credentials"
 # sudo chmod 700 "$HOME/.credentials"
-# .bashrc:
+# vim $HOME/.bashrc
 # export CREDENTIALS_DIRECTORY="$HOME/.credentials"
 
 set -e
@@ -51,8 +52,8 @@ validate_args() {
         echo "Compact: $0 NAME VALUE" >&2
         echo "Name should be valid alphanumeric filename. Underscores and dashes are allowed"
         echo "Example:" >&2
-        echo "  sudo $0 MYSQL_PASSWORD secretMYSQLpasswordEXAMPLE" >&2
-        echo "  sudo $0 --name=\"MYSQL_PASSWORD\" --value=\"secretMYSQLpasswordEXAMPLE\"" >&2
+        echo "  $0 MYSQL_PASSWORD secretMYSQLpasswordEXAMPLE" >&2
+        echo "  $0 --name=\"MYSQL_PASSWORD\" --value=\"secretMYSQLpasswordEXAMPLE\"" >&2
         exit 1
     fi
 
@@ -98,7 +99,7 @@ main() {
 
     output_file="${CREDENTIALS_DIRECTORY}/${name}.encrypted"
 
-    echo -n "$value" | systemd-creds encrypt --name="$name" - - | tee "$output_file" >/dev/null
+    echo -n "$value" | sudo systemd-creds encrypt --name="$name" - - | tee "$output_file" >/dev/null
     chmod 600 "$output_file"
 
     if [[ ! -s "$output_file" ]]; then
