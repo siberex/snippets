@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
 # https://superuser.com/a/1711576/1129367
 # sudo apt install -y curl libxml2-utils
 
